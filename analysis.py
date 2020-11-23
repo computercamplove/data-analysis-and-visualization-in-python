@@ -18,7 +18,7 @@ def get_dataframe(filename: str = "accidents.pkl.gz", verbose: bool = False) -> 
     print(data.info())
     df = data.rename(columns={'p2a': 'date'})
     df['date'] = pd.to_datetime(df['date'])
-    return sys.getsizeof(df)
+    return df
 
 # Ukol 2: následky nehod v jednotlivých regionech
 def plot_conseq(df: pd.DataFrame, fig_location: str = None,
