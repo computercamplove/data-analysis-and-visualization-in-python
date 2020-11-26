@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # skript nebude pri testovani pousten primo, ale budou volany konkreni ¨
     # funkce.
     df = get_dataframe("accidents.pkl.gz", verbose=False)
-    print(format(df.memory_usage(deep=True).sum()/1048576, '.1f'))
     plot_conseq(df, fig_location="01_nasledky.png", show_figure=True)
     plot_damage(df, "02_priciny.png", True)
     plot_surface(df, "03_stav.png", True)
+
