@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.8
 # coding=utf-8
-
+#pylint: disable=too-many-arguments
+#%%
 from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -10,15 +11,6 @@ import sys
 import math
 # muzete pridat libovolnou zakladni knihovnu ci knihovnu predstavenou na prednaskach
 # dalsi knihovny pak na dotaz
-
-def convert_size(size_bytes):
-   if size_bytes == 0:
-       return "0B"
-   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-   i = int(math.floor(math.log(size_bytes, 1024)))
-   p = math.pow(1024, i)
-   s = round(size_bytes / p, 2)
-   return "%s %s" % (s, size_name[i])
 
 # Ukol 1: nacteni dat
 def get_dataframe(filename: str = "accidents.pkl.gz", verbose: bool = False) -> pd.DataFrame:
@@ -38,18 +30,34 @@ def get_dataframe(filename: str = "accidents.pkl.gz", verbose: bool = False) -> 
         df[column] = df[column].astype('category')
     
     if verbose == True:
-        x = df.memory_usage(deep=True).sum()/1048576
-        y = data.memory_usage(deep=True).sum()/1048576
-        n = format(x, '.1f')
-        o = format(y, '.1f')
-        print("orig_size= {}\nnew_size= {}".format(o, n))
+        n = format(df.memory_usage(deep=True).sum()/1048576, '.1f')
+        o = format(data.memory_usage(deep=True).sum()/1048576, '.1f')
+        print("orig_size= {} MB\nnew_size= {} MB".format(o, n))
 
-    return data
+    return df
 
 # Ukol 2: následky nehod v jednotlivých regionech
 def plot_conseq(df: pd.DataFrame, fig_location: str = None,
                 show_figure: bool = False):
-    pass
+
+    d = df[['region', 'p13a', 'p13b', 'p13c']]
+    d.rename(columns={'p13a': 'date'})
+    region_grp = d.groupby('region').sum()
+
+    #p13a - umreli
+    #p13b - tezce zraneni
+    #p13c  - lehce zraneni
+    #fig, axes = plt.subplots(3, 1, figsize=(15, 5), sharey=True)
+    plt.figure(figsize=(15,10))
+    plt.subplot(3,1,1)
+    sns.barplot(x=region_grp.index, y=region_grp['p13a'].values)
+    plt.subplot(3,1,2)
+    sns.barplot(x=region_grp.index, y=region_grp['p13b'].values)
+    plt.subplot(3,1,3)
+    sns.barplot(x=region_grp.index, y=region_grp['p13c'].values)
+    plt.tight_layout(pad=3.0)
+    return region_grp['p13c']
+
 
 # Ukol3: příčina nehody a škoda
 def plot_damage(df: pd.DataFrame, fig_location: str = None,
@@ -67,8 +75,9 @@ if __name__ == "__main__":
     # zde je ukazka pouziti, tuto cast muzete modifikovat podle libosti
     # skript nebude pri testovani pousten primo, ale budou volany konkreni ¨
     # funkce.
-    df = get_dataframe("accidents.pkl.gz", verbose=False)
-    plot_conseq(df, fig_location="01_nasledky.png", show_figure=True)
+    df = get_dataframe("accidents.pkl.gz")
+    df2 = plot_conseq(df, fig_location="01_nasledky.png", show_figure=True)
+    print(df2)
     plot_damage(df, "02_priciny.png", True)
     plot_surface(df, "03_stav.png", True)
-
+# %%
