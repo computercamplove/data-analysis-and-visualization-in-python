@@ -41,22 +41,46 @@ def plot_conseq(df: pd.DataFrame, fig_location: str = None,
                 show_figure: bool = False):
 
     d = df[['region', 'p13a', 'p13b', 'p13c']]
-    d.rename(columns={'p13a': 'date'})
+    d['total'] = 1
     region_grp = d.groupby('region').sum()
+    order = region_grp.sort_values('total', ascending=False).index
 
-    #p13a - umreli
-    #p13b - tezce zraneni
-    #p13c  - lehce zraneni
-    #fig, axes = plt.subplots(3, 1, figsize=(15, 5), sharey=True)
-    plt.figure(figsize=(15,10))
-    plt.subplot(3,1,1)
-    sns.barplot(x=region_grp.index, y=region_grp['p13a'].values)
-    plt.subplot(3,1,2)
-    sns.barplot(x=region_grp.index, y=region_grp['p13b'].values)
-    plt.subplot(3,1,3)
-    sns.barplot(x=region_grp.index, y=region_grp['p13c'].values)
-    plt.tight_layout(pad=3.0)
-    return region_grp['p13c']
+    plt.figure(figsize=(8,10))
+    sns.set_style("darkgrid")
+    plt.subplot(4,1,1)
+    p1 = sns.barplot(x=region_grp.index, y=region_grp['p13a'].values, data=region_grp,palette=("Blues_d"), order=order)
+    p1.set(xticklabels=[])
+    p1.set(title='Úmrtí')
+    p1.set(xlabel=None)
+    p1.set(ylabel='Počet')
+
+    plt.subplot(4,1,2)
+    p2 = sns.barplot(x=region_grp.index, y=region_grp['p13b'].values, data=region_grp, palette=("Blues_d"),order=order)
+    p2.set(xticklabels=[])
+    p2.set(title='Těžce ranění')
+    p2.set(xlabel=None)
+    p2.set(ylabel='Počet')
+
+    plt.subplot(4,1,3)
+    p3 = sns.barplot(x=region_grp.index, y=region_grp['p13c'].values, data=region_grp,palette=("Blues_d"),order=order)
+    p3.set(xticklabels=[])
+    p3.set(title='Lehce ranění')
+    p3.set(xlabel=None)
+    p3.set(ylabel='Počet')
+    
+    plt.subplot(4,1,4)
+    p4 = sns.barplot(x=region_grp.index, y=region_grp['total'].values, data=region_grp,palette=("Blues_d"),order=order)
+    p4.set(title='Celkem nehod')
+    p4.set(xlabel=None)
+    p4.set(ylabel='Počet')
+    
+    plt.tight_layout(pad=1.0)
+
+    if fig_location != None:
+        cwd = os.getcwd()
+        plt.savefig(cwd +'/'+fig_location)
+    if show_figure == True:
+        plt.show()
 
 
 # Ukol3: příčina nehody a škoda
@@ -76,8 +100,7 @@ if __name__ == "__main__":
     # skript nebude pri testovani pousten primo, ale budou volany konkreni ¨
     # funkce.
     df = get_dataframe("accidents.pkl.gz")
-    df2 = plot_conseq(df, fig_location="01_nasledky.png", show_figure=True)
-    print(df2)
+    plot_conseq(df, fig_location="01_nasledky.png", show_figure=True)
     plot_damage(df, "02_priciny.png", True)
     plot_surface(df, "03_stav.png", True)
 # %%
