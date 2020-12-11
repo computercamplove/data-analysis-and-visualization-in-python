@@ -86,7 +86,38 @@ def plot_conseq(df: pd.DataFrame, fig_location: str = None,
 # Ukol3: příčina nehody a škoda
 def plot_damage(df: pd.DataFrame, fig_location: str = None,
                 show_figure: bool = False):
-    pass
+    
+    data = df[['region', 'p53', 'p12']]
+    data['p12'] = data['p12'].astype('int64')
+    bins = [100, 200, 209, 311, 414, 516, 615]
+    label=['nezaviněná řidičem','nepřiměřená rychlost jízdy', 'nesprávné předjíždění',
+                    'nedání přednosti v jízdě', 'nesprávný způsob jízdy','technická závada vozidla']
+    data['bins'] = pd.cut(data['p12'], bins=bins, labels=label)
+    
+    
+    '''
+    data['bins'] = pd.cut(x=data['p12'], bins=[301, 311],
+                    labels=['nesprávné předjíždění'])
+    data['bins'] = pd.cut(x=data['p12'], bins=[401, 414],
+                    labels=['nedání přednosti v jízdě'])
+    data['bins'] = pd.cut(x=data['p12'], bins=[501,516],
+                    labels=['nesprávný způsob jízdy'])
+    data['bins'] = pd.cut(x=data['p12'], bins=[601,615],
+                    labels=['technická závada vozidla'])
+    '''
+    
+    pha = data[data['region'] == 'PHA']
+    hkk = data[data['region'] == 'HKK']
+    plk = data[data['region'] == 'PLK']
+    jhm = data[data['region'] == 'JHM']
+
+    #r = ['STC','ULK', 'MSK', 'OLK', 'LBK', 'VYS', 'JHC', 'ZLK', 'PAK', 'KVK']
+    
+    #data[data.region == 'JHM' and data.region == 'HKK' and data.region == 'PLK' and data.region == 'PHA']
+    plt.subplot(2,2,1)
+    
+
+    return hkk
 
 # Ukol 4: povrch vozovky
 def plot_surface(df: pd.DataFrame, fig_location: str = None,
@@ -100,7 +131,8 @@ if __name__ == "__main__":
     # skript nebude pri testovani pousten primo, ale budou volany konkreni ¨
     # funkce.
     df = get_dataframe("accidents.pkl.gz")
-    plot_conseq(df, fig_location="01_nasledky.png", show_figure=True)
-    plot_damage(df, "02_priciny.png", True)
+    #plot_conseq(df, fig_location="01_nasledky.png", show_figure=True)
+    d = plot_damage(df, "02_priciny.png", True)
+    print(d)
     plot_surface(df, "03_stav.png", True)
 # %%
