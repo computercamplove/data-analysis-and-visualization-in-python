@@ -2,6 +2,7 @@
 # coding=utf-8
 #pylint: disable=too-many-arguments
 #%%
+from itertools import groupby
 from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -86,38 +87,65 @@ def plot_conseq(df: pd.DataFrame, fig_location: str = None,
 # Ukol3: příčina nehody a škoda
 def plot_damage(df: pd.DataFrame, fig_location: str = None,
                 show_figure: bool = False):
-    
+
     data = df[['region', 'p53', 'p12']]
     data['p12'] = data['p12'].astype('int64')
-    bins = [100, 200, 209, 311, 414, 516, 615]
+    bins = [99, 200, 209, 311, 414, 516, 615]
     label=['nezaviněná řidičem','nepřiměřená rychlost jízdy', 'nesprávné předjíždění',
                     'nedání přednosti v jízdě', 'nesprávný způsob jízdy','technická závada vozidla']
-    data['bins'] = pd.cut(data['p12'], bins=bins, labels=label)
-    
-    
-    '''
-    data['bins'] = pd.cut(x=data['p12'], bins=[301, 311],
-                    labels=['nesprávné předjíždění'])
-    data['bins'] = pd.cut(x=data['p12'], bins=[401, 414],
-                    labels=['nedání přednosti v jízdě'])
-    data['bins'] = pd.cut(x=data['p12'], bins=[501,516],
-                    labels=['nesprávný způsob jízdy'])
-    data['bins'] = pd.cut(x=data['p12'], bins=[601,615],
-                    labels=['technická závada vozidla'])
-    '''
-    
-    pha = data[data['region'] == 'PHA']
-    hkk = data[data['region'] == 'HKK']
-    plk = data[data['region'] == 'PLK']
-    jhm = data[data['region'] == 'JHM']
+    data['p12'] = pd.cut(data['p12'], bins=bins, labels=label)
+    data['p53'] = data['p53'].div(10)
+    bin2 = [-1, 50, 200, 500, 1000, np.inf]
+    lab2= ['< 50', '50 - 200', '200 - 500', '500 - 1000', '1000 >']
+    data['p53'] = pd.cut(data['p53'], bins=bin2, labels=lab2)
 
-    #r = ['STC','ULK', 'MSK', 'OLK', 'LBK', 'VYS', 'JHC', 'ZLK', 'PAK', 'KVK']
-    
-    #data[data.region == 'JHM' and data.region == 'HKK' and data.region == 'PLK' and data.region == 'PHA']
-    plt.subplot(2,2,1)
-    
+    pha = data[data['region'] == 'PHA'].sort_values('p53', ascending=True)
+    hkk = data[data['region'] == 'HKK'].sort_values('p53', ascending=True)
+    plk = data[data['region'] == 'PLK'].sort_values('p53', ascending=True)
+    jhm = data[data['region'] == 'JHM'].sort_values('p53', ascending=True)
 
-    return hkk
+    sns.set_theme(style="whitegrid")
+    fig, [[axis1, axis2],[axis3, axis4]] = plt.subplots(2,2,figsize=(10,10), sharey=True)
+    sns.countplot(x=pha['p53'], hue=pha['p12'], data=pha, ax=axis1, palette="CMRmap")
+    axis1.set(yscale='log')
+    axis1.set(ylabel='Počet')
+    axis1.set(title='PHA')
+    axis1.set(xlabel=None)
+    axis1.get_legend().remove()
+
+    sns.countplot(x=hkk['p53'], hue=hkk['p12'], data=hkk, ax=axis2, palette="CMRmap")
+    axis2.set(yscale='log')
+    axis2.set(ylabel=None)
+    axis2.set(xlabel=None)
+    axis2.set(title='HKK')
+    axis2.get_legend().remove()
+
+    sns.countplot(x=plk['p53'], hue=plk['p12'], data=plk, ax=axis3, palette="CMRmap")
+    axis3.set(yscale='log')
+    axis3.set(ylabel='Počet')
+    axis3.set(xlabel="Škoda [tisíc Kč]")
+    axis3.set(title='PLK')
+    axis3.get_legend().remove()
+
+    sns.countplot(x=jhm['p53'], hue=jhm['p12'], data=jhm, ax=axis4, palette="CMRmap")
+    axis4.set(yscale='log')
+    axis4.set(ylabel=None)
+    axis4.set(xlabel="Škoda [tisíc Kč]")
+    axis4.set(title='JHM')
+    axis4.get_legend().remove()
+
+    handles, labels = axis1.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', title="Příčina nehody",
+                    bbox_to_anchor=(0.5,0.0),fancybox=False, shadow=False, ncol=3)
+    plt.setp(axis1, ylim=axis3.get_ylim())
+    plt.tight_layout()
+    fig.subplots_adjust(bottom=0.2)
+    
+    if fig_location != None:
+        cwd = os.getcwd()
+        plt.savefig(cwd +'/'+fig_location, bbox_inches="tight")
+    if show_figure == True:
+        plt.show()
 
 # Ukol 4: povrch vozovky
 def plot_surface(df: pd.DataFrame, fig_location: str = None,
@@ -132,7 +160,6 @@ if __name__ == "__main__":
     # funkce.
     df = get_dataframe("accidents.pkl.gz")
     #plot_conseq(df, fig_location="01_nasledky.png", show_figure=True)
-    d = plot_damage(df, "02_priciny.png", True)
-    print(d)
+    plot_damage(df, "02_priciny.png", True)
     plot_surface(df, "03_stav.png", True)
 # %%
