@@ -34,7 +34,7 @@ if __name__ == "__main__":
     file = sys.argv[0] 
     path_project = os.path.abspath(file+"/..")
     data = pd.read_pickle(path_project + "/"+ 'accidents.pkl.gz', compression='gzip')
-    print(data.tail())
+    
 
     gdf = make_geo(data)
     print(gdf.tail())
