@@ -13,6 +13,7 @@ import sys
 def make_geo(df: pd.DataFrame) -> geopandas.GeoDataFrame:
     """ Konvertovani dataframe do geopandas.GeoDataFrame se spravnym kodovani"""
     df = df.dropna()
+    
     return df
 
 
